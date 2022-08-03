@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Set;
 
 public class SelectDeviceActivity extends AppCompatActivity {
+    // Class extracted of: https://medium.com/swlh/create-custom-android-app-to-control-arduino-board-using-bluetooth-ff878e998aa8
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
