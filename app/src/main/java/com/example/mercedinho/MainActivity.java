@@ -56,8 +56,8 @@ public class MainActivity extends AppCompatActivity {
         final Toolbar toolbar = findViewById(R.id.toolbar);
         final ProgressBar progressBar = findViewById(R.id.progressBar);
         progressBar.setVisibility(View.GONE);
-        final TextView connectionStateText = findViewById(R.id.text_connectionstate);
-        final ImageView connectionStateImage = findViewById(R.id.imageView_connectionState);
+        TextView connectionStateText = findViewById(R.id.text_connectionstate);
+        ImageView connectionStateImage = findViewById(R.id.imageView_connectionState);
 
         // If a bluetooth device has been selected from SelectDeviceActivity
         deviceName = getIntent().getStringExtra("deviceName");
@@ -92,13 +92,21 @@ public class MainActivity extends AppCompatActivity {
                                 toolbar.setSubtitle("Connected to " + deviceName);
                                 progressBar.setVisibility(View.GONE);
                                 buttonConnect.setText("Connected");
+                                connectionStateText.setText("Connected");
+                                connectionStateImage.setImageResource(R.drawable.connected);
                                 buttonConnect.setEnabled(true);
+                                buttonTest.setVisibility(View.VISIBLE);
+                                buttonStart.setVisibility(View.VISIBLE);
                                 break;
                             case -1:
                                 toolbar.setSubtitle("Device fails to connect");
+                                connectionStateText.setText("Not Connected");
+                                connectionStateImage.setImageResource(R.drawable.not_connected);
                                 progressBar.setVisibility(View.GONE);
                                 buttonConnect.setText("Connect");
                                 buttonConnect.setEnabled(true);
+                                buttonTest.setVisibility(View.INVISIBLE);
+                                buttonStart.setVisibility(View.INVISIBLE);
                                 break;
                         }
                 }
@@ -123,6 +131,15 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // When the user press the Test button:
+        buttonTest.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent testIntent = new Intent(MainActivity.this, TestActivity.class);
+                startActivity(testIntent);
+            }
+        });
+
     }
     /* ============================ Thread to Create Bluetooth Connection =================================== */
     public static class CreateConnectThread extends Thread {
@@ -144,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
                 You should try using other methods i.e. :
                 tmp = device.createRfcommSocketToServiceRecord(MY_UUID);
                  */
-                tmp = bluetoothDevice.createInsecureRfcommSocketToServiceRecord(uuid);
+                tmp = bluetoothDevice.createRfcommSocketToServiceRecord(uuid);
 
             } catch (IOException e) {
                 Log.e(TAG, "Socket's create() method failed", e);

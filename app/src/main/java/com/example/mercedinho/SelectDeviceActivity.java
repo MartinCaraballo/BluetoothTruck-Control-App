@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Set;
 
 public class SelectDeviceActivity extends AppCompatActivity {
+
     // Class extracted of: https://medium.com/swlh/create-custom-android-app-to-control-arduino-board-using-bluetooth-ff878e998aa8
 
     @Override
@@ -29,12 +30,12 @@ public class SelectDeviceActivity extends AppCompatActivity {
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
         // Get List of Paired Bluetooth Device
-        @SuppressLint("MissingPermission") Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
+        Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
         List<Object> deviceList = new ArrayList<>();
         if (pairedDevices.size() > 0) {
             // There are paired devices. Get the name and address of each paired device.
             for (BluetoothDevice device : pairedDevices) {
-                @SuppressLint("MissingPermission") String deviceName = device.getName();
+                String deviceName = device.getName();
                 String deviceHardwareAddress = device.getAddress(); // MAC address
                 DeviceInfoModel deviceInfoModel = new DeviceInfoModel(deviceName, deviceHardwareAddress);
                 deviceList.add(deviceInfoModel);
