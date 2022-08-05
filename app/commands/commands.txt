@@ -1,0 +1,9 @@
+TestCommands ->
+    -> <led-on>     => turns on the led on the esp32.
+    -> <led-off>    => turns off the led on the esp32.
+
+ControlCommands ->
+    -> < >          =>
+    -> < >          =>
+    -> < >          =>
+    -> < >          =>
