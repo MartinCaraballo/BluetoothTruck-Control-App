@@ -28,6 +28,9 @@ import com.google.android.material.snackbar.Snackbar;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
@@ -41,8 +44,19 @@ public class MainActivity extends AppCompatActivity {
     public static ConnectedThread connectedThread;
     public static CreateConnectThread createConnectThread;
 
+    public static TestActivity testActivity;
+
     private final static int CONNECTING_STATUS = 1; // used in bluetooth handler to identify message status
     private final static int MESSAGE_READ = 2; // used in bluetooth handler to identify message update
+
+    // Defines several constants used when transmitting messages between the
+    // service and the UI.
+    private interface MessageConstants {
+        public static final int MESSAGE_READ = 0;
+        public static final int MESSAGE_WRITE = 1;
+        public static final int MESSAGE_TOAST = 2;
+
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -139,8 +153,8 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(testIntent);
             }
         });
-
     }
+
     /* ============================ Thread to Create Bluetooth Connection =================================== */
     public static class CreateConnectThread extends Thread {
 
@@ -214,6 +228,7 @@ public class MainActivity extends AppCompatActivity {
         private final BluetoothSocket mmSocket;
         private final InputStream mmInStream;
         private final OutputStream mmOutStream;
+        private byte[] mmBuffer; // mmBuffer store for the stream
 
         public ConnectedThread(BluetoothSocket socket) {
             mmSocket = socket;
@@ -232,7 +247,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         public void run() {
-            byte[] buffer = new byte[1024];  // buffer store for the stream
+            mmBuffer = new byte[1024];  // buffer store for the stream
             int bytes = 0; // bytes returned from read()
             // Keep listening to the InputStream until an exception occurs
             while (true) {
@@ -241,12 +256,13 @@ public class MainActivity extends AppCompatActivity {
                     Read from the InputStream from Arduino until termination character is reached.
                     Then send the whole String message to GUI Handler.
                      */
-                    buffer[bytes] = (byte) mmInStream.read();
+                    mmBuffer[bytes] = (byte) mmInStream.read();
                     String readMessage;
-                    if (buffer[bytes] == '\n'){
-                        readMessage = new String(buffer,0,bytes);
+                    if (mmBuffer[bytes] == '\n'){
+                        readMessage = new String(mmBuffer,0,bytes);
                         Log.e("Arduino Message",readMessage);
                         handler.obtainMessage(MESSAGE_READ,readMessage).sendToTarget();
+                        //TODO: SOLUCIONAR INSTANCIA DE TEST ACTIVITY PARA PODER ENVIAR LA RESPONSE. *'TestActivity'.processResponse(readMessage);*
                         bytes = 0;
                     } else {
                         bytes++;
@@ -258,13 +274,25 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        /* Call this from the main activity to send data to the remote device */
-        public void write(String input) {
-            byte[] bytes = input.getBytes(); //converts entered String into bytes
+        public void write(byte[] bytes) {
             try {
                 mmOutStream.write(bytes);
+
+                // Share the sent message with the UI activity.
+                Message writtenMsg = handler.obtainMessage(
+                        MessageConstants.MESSAGE_WRITE, -1, -1, mmBuffer);
+                writtenMsg.sendToTarget();
             } catch (IOException e) {
-                Log.e("Send Error","Unable to send message",e);
+                Log.e(TAG, "Error occurred when sending data", e);
+
+                // Send a failure message back to the activity.
+                Message writeErrorMsg =
+                        handler.obtainMessage(MessageConstants.MESSAGE_TOAST);
+                Bundle bundle = new Bundle();
+                bundle.putString("toast",
+                        "Couldn't send data to the other device");
+                writeErrorMsg.setData(bundle);
+                handler.sendMessage(writeErrorMsg);
             }
         }
 
