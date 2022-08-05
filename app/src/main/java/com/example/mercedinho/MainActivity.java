@@ -8,6 +8,7 @@ import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
@@ -28,6 +29,7 @@ import com.google.android.material.snackbar.Snackbar;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.ref.WeakReference;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -225,6 +227,13 @@ public class MainActivity extends AppCompatActivity {
     /* =============================== Thread for Data Transfer =========================================== */
     public static class ConnectedThread extends Thread {
 
+        // Stores a instance of Test Activity.
+        private static WeakReference<Activity> testActivityRef;
+
+        public static void updateActivity(Activity activity) {
+            testActivityRef = new WeakReference<Activity>(activity);
+        }
+
         private final BluetoothSocket mmSocket;
         private final InputStream mmInStream;
         private final OutputStream mmOutStream;
@@ -262,7 +271,7 @@ public class MainActivity extends AppCompatActivity {
                         readMessage = new String(mmBuffer,0,bytes);
                         Log.e("Arduino Message",readMessage);
                         handler.obtainMessage(MESSAGE_READ,readMessage).sendToTarget();
-                        //TODO: SOLUCIONAR INSTANCIA DE TEST ACTIVITY PARA PODER ENVIAR LA RESPONSE. *'TestActivity'.processResponse(readMessage);*
+                        processResponse(readMessage);
                         bytes = 0;
                     } else {
                         bytes++;
@@ -293,6 +302,22 @@ public class MainActivity extends AppCompatActivity {
                         "Couldn't send data to the other device");
                 writeErrorMsg.setData(bundle);
                 handler.sendMessage(writeErrorMsg);
+            }
+        }
+
+        // This method takes a message (response) and adds it to the messages box in 'TestActivity'.
+        public void processResponse(String response) {
+            try {
+                String result;
+                EditText messagesBox = testActivityRef.get().findViewById(R.id.messagesBox);
+                if (response.isEmpty()) {
+                    result = LocalDateTime.now() + ": " + "Don't receive any response.\n";
+                } else {
+                    result = LocalDateTime.now() + ": " + response + "\n";
+                }
+                messagesBox.append(result);
+            } catch (Exception e) {
+                e.getStackTrace();
             }
         }
 

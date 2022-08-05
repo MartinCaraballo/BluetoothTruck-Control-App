@@ -22,8 +22,9 @@ public class TestActivity extends AppCompatActivity {
         final EditText messagesBox = findViewById(R.id.messagesBox);
         messagesBox.setEnabled(false);
         final EditText inputText = findViewById(R.id.inputTestText);
+        MainActivity.ConnectedThread.updateActivity(this);
 
-        // TODO: las respuestas deben ser procesadas de forma asincrona.
+
         buttonSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -40,21 +41,5 @@ public class TestActivity extends AppCompatActivity {
                 }
             }
         });
-    }
-
-    // This method takes a message (response) and adds it to the messages box in 'TestActivity'.
-    public void processResponse(String response) {
-        try {
-            String result;
-            EditText messagesBox = findViewById(R.id.messagesBox);
-            if (response.isEmpty()) {
-                result = LocalDateTime.now() + ": " + "Don't receive any response.\n";
-            } else {
-                result = LocalDateTime.now() + ": " + response + "\n";
-            }
-            messagesBox.append(result);
-        } catch (Exception e) {
-            e.getStackTrace();
-        }
     }
 }
