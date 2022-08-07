@@ -227,17 +227,11 @@ public class MainActivity extends AppCompatActivity {
     /* =============================== Thread for Data Transfer =========================================== */
     public static class ConnectedThread extends Thread {
 
-        // Stores a instance of Test Activity.
-        private static WeakReference<Activity> testActivityRef;
-
-        public static void updateActivity(Activity activity) {
-            testActivityRef = new WeakReference<Activity>(activity);
-        }
-
         private final BluetoothSocket mmSocket;
         private final InputStream mmInStream;
         private final OutputStream mmOutStream;
         private byte[] mmBuffer; // mmBuffer store for the stream
+        private static String[] response = new String[1];
 
         public ConnectedThread(BluetoothSocket socket) {
             mmSocket = socket;
@@ -268,17 +262,16 @@ public class MainActivity extends AppCompatActivity {
                     mmBuffer[bytes] = (byte) mmInStream.read();
                     String readMessage;
                     if (mmBuffer[bytes] == '\n'){
-                        readMessage = new String(mmBuffer,0,bytes);
-                        Log.e("Arduino Message",readMessage);
+                        readMessage = new String(mmBuffer, 0, bytes);
+                        response[0] = readMessage;
+                        sendMessageToHandler();
                         handler.obtainMessage(MESSAGE_READ,readMessage).sendToTarget();
-                        processResponse(readMessage);
                         bytes = 0;
                     } else {
                         bytes++;
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
-                    break;
+                    e.getStackTrace();
                 }
             }
         }
@@ -305,20 +298,20 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        // This method takes a message (response) and adds it to the messages box in 'TestActivity'.
-        public void processResponse(String response) {
-            try {
-                String result;
-                EditText messagesBox = testActivityRef.get().findViewById(R.id.messagesBox);
-                if (response.isEmpty()) {
-                    result = LocalDateTime.now() + ": " + "Don't receive any response.\n";
-                } else {
-                    result = LocalDateTime.now() + ": " + response + "\n";
-                }
-                messagesBox.append(result);
-            } catch (Exception e) {
-                e.getStackTrace();
+        // This method returns last response received.
+        public static String getResponse() {
+            String message = response[0];
+            if (message == null) {
+                return "";
+            } else {
+                return message;
             }
+        }
+
+        private void sendMessageToHandler() {
+            Message message = new Message();
+            message.what = 1;
+            TestActivity.getHandler().sendMessage(message);
         }
 
         /* Call this from the main activity to shutdown the connection */

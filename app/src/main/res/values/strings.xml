@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Mercedinho</string>
+    <string name="Send">Send</string>
+    <string name="LedOn">Led On</string>
+    <string name="LedOff">Led Off</string>
+    <string name="MessagesBoxInfo">Messages Box: To test you can send a message or turn on/off led in the ESP32. If you send a message, the ESP will send the same message.</string>
 </resources>
