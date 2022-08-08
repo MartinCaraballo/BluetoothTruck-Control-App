@@ -46,10 +46,9 @@ public class MainActivity extends AppCompatActivity {
     public static ConnectedThread connectedThread;
     public static CreateConnectThread createConnectThread;
 
-    public static TestActivity testActivity;
-
     private final static int CONNECTING_STATUS = 1; // used in bluetooth handler to identify message status
     private final static int MESSAGE_READ = 2; // used in bluetooth handler to identify message update
+    private boolean connected;
 
     // Defines several constants used when transmitting messages between the
     // service and the UI.
@@ -106,6 +105,7 @@ public class MainActivity extends AppCompatActivity {
                         switch(msg.arg1){
                             case 1:
                                 toolbar.setSubtitle("Connected to " + deviceName);
+                                connected = true;
                                 progressBar.setVisibility(View.GONE);
                                 buttonConnect.setText("Connected");
                                 connectionStateText.setText("Connected");
@@ -116,6 +116,7 @@ public class MainActivity extends AppCompatActivity {
                                 break;
                             case -1:
                                 toolbar.setSubtitle("Device fails to connect");
+                                connected = false;
                                 connectionStateText.setText("Not Connected");
                                 connectionStateImage.setImageResource(R.drawable.not_connected);
                                 progressBar.setVisibility(View.GONE);
@@ -153,6 +154,16 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Intent testIntent = new Intent(MainActivity.this, TestActivity.class);
                 startActivity(testIntent);
+            }
+        });
+
+        buttonStart.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent controllerIntent = new Intent(MainActivity.this, Controller.class);
+                if (connected) {
+                    startActivity(controllerIntent);
+                }
             }
         });
     }
