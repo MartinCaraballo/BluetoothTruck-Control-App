@@ -14,11 +14,15 @@ import android.widget.ToggleButton;
 
 import java.time.LocalDateTime;
 import java.util.Timer;
+import java.util.TimerTask;
 
 public class Controller extends AppCompatActivity {
 
     private byte currentGear = 0;
     private byte pwmValue = 0;
+
+    private Timer timer = new Timer();
+    private TimerTask timerTask;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -36,6 +40,17 @@ public class Controller extends AppCompatActivity {
         Button gearUp = findViewById(R.id.button_upshift);
         Button gearDown = findViewById(R.id.button_downshift);
         ToggleButton toggleCommandsBoxVisibility = findViewById(R.id.toggleCommandBoxVisibility);
+
+        // TODO: TEST THIS FUNCTION:
+        TimerTask timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                try {
+                    String command = "throttle, " + pwmValue + ", " + currentGear;
+                    MainActivity.connectedThread.write(command.getBytes());
+                } catch (Exception e) { }
+            }
+        };
 
         gearUp.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -87,8 +102,9 @@ public class Controller extends AppCompatActivity {
                     if (event.getAction() == MotionEvent.ACTION_DOWN) {
                         commandsBox.append("throttle, " + pwmValue + ", " + currentGear + "\n");
                         pwmValue++;
+                        timer.schedule(timerTask, 0, 50);
                     } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                        //boton liberado
+                        timer.cancel();
                     }
                 } catch (Exception e) { }
                 return false;
@@ -101,6 +117,5 @@ public class Controller extends AppCompatActivity {
                 commandsBox.append("brake\n");
             }
         });
-
     }
 }
